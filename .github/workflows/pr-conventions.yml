@@ -1,0 +1,24 @@
+name: PR conventions
+on:
+    pull_request:
+        types: [opened, edited, synchronize, reopened]
+permissions:
+    contents: read
+    issues: read
+jobs:
+    pr-conventions:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+            - name: Check base, branch and title
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  GH_REPO: ${{ github.repository }}
+                  BASE: ${{ github.base_ref }}
+                  HEAD: ${{ github.head_ref }}
+                  TITLE: ${{ github.event.pull_request.title }}
+              # Rules and their tests: scripts/pr-check.sh, scripts/pr-check_test.sh
+              run: |
+                  if ! msg=$(scripts/pr-check.sh "$BASE" "$HEAD" "$TITLE" 2>&1); then
+                    echo "::error::$msg"; exit 1
+                  fi
