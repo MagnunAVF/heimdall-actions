@@ -21,7 +21,8 @@ the tool call and shows stderr to Claude):
   `--context kind-heimdall`, and for `helm install|upgrade|uninstall|rollback|delete` without
   `--kube-context kind-heimdall`. Otherwise 0.
 - `.claude/hooks/before-edit.sh` (PreToolUse, Edit|Write): reads `.tool_input.file_path`.
-  Exit 2 for `.env` / `.env.*` at any depth, `internal/store/db/*` (sqlc output) and
+  Exit 2 for `.env` / `.env.*` at any depth except `.env.example`, `internal/store/db/*`
+  (sqlc output) and
   migrations in `internal/store/migrations/` that are already committed. Otherwise 0.
 - `.claude/hooks/after-edit.sh` (PostToolUse, Edit|Write): `sqlc generate` after SQL edits,
   golangci-lint fmt/run after Go edits, prettier/eslint after web/ edits. Each step is skipped
