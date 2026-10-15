@@ -1,0 +1,21 @@
+name: Close ENG issue on merge into dev
+on:
+    pull_request:
+        types: [closed]
+        branches: [dev]
+permissions:
+    contents: read
+    issues: write
+jobs:
+    close:
+        if: github.event.pull_request.merged == true
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+            - env:
+                  GH_TOKEN: ${{ github.token }}
+                  GH_REPO: ${{ github.repository }}
+                  HEAD: ${{ github.head_ref }}
+                  PR_URL: ${{ github.event.pull_request.html_url }}
+              # Logic and its tests: scripts/close-eng-issue.sh, scripts/close-eng-issue_test.sh
+              run: scripts/close-eng-issue.sh "$HEAD" "$PR_URL"
