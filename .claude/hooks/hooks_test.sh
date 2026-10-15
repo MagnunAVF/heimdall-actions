@@ -68,5 +68,17 @@ run "stop hook active" 0 "" stop-check.sh '{"stop_hook_active": true}'
 echo "-- changed" >>"$repo/internal/store/migrations/00001_init.sql"
 run "dirty tree, no Makefile" 0 "" stop-check.sh '{"stop_hook_active": false}'
 
+# 15-16. settings.json: valid, portable, no one-off or overlapping permissions.
+settings="$here/../settings.json"
+if jq empty "$settings" 2>/dev/null; then ok; else bad "settings.json is not valid JSON"; fi
+# "X", "X:*" and "X *" overlap: strip the wildcard suffix before looking for repeats.
+dups=$(jq -r '.permissions.allow[]' "$settings" | sed -E 's/(:\*| \*)\)$/)/' | sort | uniq -d)
+if [ -z "$dups" ]; then ok; else bad "overlapping allow entries: $dups"; fi
+if ! grep -q 'sed -i' "$settings"; then ok; else bad "settings.json has a one-off sed -i entry"; fi
+if ! grep -q '/Users/' "$settings"; then ok; else bad "settings.json has a machine-specific path"; fi
+if [ "$(jq '.permissions | has("additionalDirectories")' "$settings")" = false ]; then ok; else
+  bad "settings.json has additionalDirectories"
+fi
+
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
