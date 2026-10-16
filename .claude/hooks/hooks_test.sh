@@ -80,5 +80,14 @@ if [ "$(jq '.permissions | has("additionalDirectories")' "$settings")" = false ]
   bad "settings.json has additionalDirectories"
 fi
 
+# 17-18. gh: reads run without a prompt, every write asks.
+gh_allow=$(jq -r '.permissions.allow[] | select(startswith("Bash(gh"))' "$settings")
+writes=$(printf '%s\n' "$gh_allow" |
+  grep -E '^Bash\(gh( [a-z-]+)?( \*|:\*)\)$|gh api|create|edit|close|comment|delete|merge|reopen')
+if [ -z "$writes" ]; then ok; else bad "allow entries cover gh writes: $writes"; fi
+for read in "gh issue view:*" "gh issue list:*" "gh label list:*"; do
+  if printf '%s\n' "$gh_allow" | grep -qxF "Bash($read)"; then ok; else bad "gh read not allowed: $read"; fi
+done
+
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
