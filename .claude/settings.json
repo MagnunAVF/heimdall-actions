@@ -44,8 +44,9 @@
       "Bash(git checkout -b:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(gh issue *)",
-      "Bash(gh label *)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh label list:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
       "Bash(gh pr list:*)"
