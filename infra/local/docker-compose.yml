@@ -38,8 +38,12 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.8.1
-    # start-dev keeps its own file database in /opt/keycloak/data.
-    command: start-dev
+    # start-dev keeps its own file database in /opt/keycloak/data. --import-realm loads the
+    # heimdall realm (keycloak/README.md) unless the volume already has it.
+    command: start-dev --import-realm
+    configs:
+      - source: heimdall-realm
+        target: /opt/keycloak/data/import/heimdall-realm.json
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD:-admin}
@@ -62,6 +66,11 @@ services:
       timeout: 3s
       retries: 30
       start_period: 30s
+
+# Read-only config files mounted into services (not data, so not a named volume).
+configs:
+  heimdall-realm:
+    file: ./keycloak/heimdall-realm.json
 
 volumes:
   postgres-data:
