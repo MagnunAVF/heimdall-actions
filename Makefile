@@ -6,7 +6,7 @@ GO            ?= go
 GOLANGCI_LINT ?= golangci-lint
 SQLC          ?= $(GO) tool sqlc
 NPM           ?= npm
-COMPOSE       ?= docker compose -p heimdall -f deploy/docker-compose.yml
+COMPOSE       ?= docker compose -p heimdall -f infra/local/docker-compose.yml
 
 # The hooks test is listed by name so that losing it fails the check instead of skipping it.
 SCRIPT_TESTS := $(wildcard scripts/*_test.sh) .claude/hooks/hooks_test.sh
@@ -61,16 +61,16 @@ script-tests:
 	if [ -n "$$failed" ]; then echo "failed:$$failed" >&2; exit 1; fi
 
 up:
-ifeq ($(wildcard deploy/docker-compose.yml),)
-	@echo "skip: up (no deploy/docker-compose.yml yet)"
+ifeq ($(wildcard infra/local/docker-compose.yml),)
+	@echo "skip: up (no infra/local/docker-compose.yml yet)"
 else
 	$(COMPOSE) up -d --wait
 endif
 
 ## down: stops the stack and deletes its volumes, so the next `make up` starts empty.
 down:
-ifeq ($(wildcard deploy/docker-compose.yml),)
-	@echo "skip: down (no deploy/docker-compose.yml yet)"
+ifeq ($(wildcard infra/local/docker-compose.yml),)
+	@echo "skip: down (no infra/local/docker-compose.yml yet)"
 else
 	$(COMPOSE) down -v
 endif
