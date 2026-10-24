@@ -53,6 +53,8 @@ removes containers and volumes (`docker volume ls`). Output goes in the PR.
 1. Docs: this plan and the M1 Decisions lines.
 2. `scripts/compose_test.sh` (failing first), then `deploy/docker-compose.yml` and
    `deploy/.env.example`; `make check` green; manual `make up` / `make down`.
+3. `.claude/settings.json`: narrow the `Read(.env.*)` deny rules so `.env.example` is readable
+   and writable (deny wins over allow, so an allow entry cannot do it).
 
 ## Approved decisions
 
@@ -61,3 +63,6 @@ removes containers and volumes (`docker volume ls`). Output goes in the PR.
 - Redis requires a password (`--requirepass`), for parity with production.
 - Postgres and Redis use the `-alpine` images.
 - `compose_test.sh` fails, not skips, when the docker CLI is missing.
+- The catch-all `Read(./**/.env.*)` deny blocked `.env.example`. It is replaced by explicit
+  variants (`.env.local`, `.env.*.local`, `.env.development`, `.env.production`,
+  `.env.staging`, `.env.test`) at the root and any depth; `.env` stays denied. Done in this PR.
