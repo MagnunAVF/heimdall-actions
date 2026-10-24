@@ -1,0 +1,69 @@
+# Local development stack: PostgreSQL, Redis and Keycloak. Start with `make up`, remove
+# everything (volumes included) with `make down`. Every default below is dev-only; override them
+# in deploy/.env (see deploy/.env.example). Ports bind to 127.0.0.1 only.
+# Tests: scripts/compose_test.sh
+
+services:
+  postgres:
+    image: postgres:17.11-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-heimdall}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-heimdall}
+      POSTGRES_DB: ${POSTGRES_DB:-heimdall}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:8.10.2-alpine
+    # redis-cli reads REDISCLI_AUTH, so the healthcheck needs no password on its command line.
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-heimdall}
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:-heimdall}
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.1
+    # start-dev keeps its own file database in /opt/keycloak/data.
+    command: start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD:-admin}
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "127.0.0.1:${KEYCLOAK_PORT:-8080}:8080"
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+    # The image has no curl, so ask the management port for /health/ready over bash's /dev/tcp.
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          grep -q '"UP"' <&3
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+volumes:
+  postgres-data:
+  redis-data:
+  keycloak-data:
