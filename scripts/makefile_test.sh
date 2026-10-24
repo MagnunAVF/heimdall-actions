@@ -98,7 +98,7 @@ FAKE_FAIL=npm \
 
 # Compose.
 fresh
-mkdir -p "$proj/deploy" && touch "$proj/deploy/docker-compose.yml"
+mkdir -p "$proj/infra/local" && touch "$proj/infra/local/docker-compose.yml"
 check "up"   0 "" compose "up -d --wait" -- up
 check "down" 0 "" compose "up -d --wait
 down -v" -- down

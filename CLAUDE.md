@@ -35,7 +35,8 @@ keep this list in sync when they change.
 - internal/logs → ClickHouse batch writer and log reader for SSE.
 - internal/platform → shared pieces: errs (sentinel errors), config, observability setup.
 - web/ → React + TypeScript frontend (Vite), its own npm project. Talks only to the API.
-- deploy/ → docker-compose.yml, kind config, Kubernetes manifests / Helm charts.
+- infra/local → docker-compose.yml (+ .env.example) and the kind config for local development.
+- infra/stage, infra/prod → Kubernetes manifests / Helm values per environment (empty for now).
 
 The API never talks to Kubernetes; the worker never serves HTTP to users. They share state only
 through PostgreSQL (via the API) and RabbitMQ.

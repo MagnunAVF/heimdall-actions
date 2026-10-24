@@ -4,8 +4,8 @@ Status: approved 2026-10-24. Milestone M1, lane deploy.
 
 ## Goal
 
-Add `deploy/docker-compose.yml` with PostgreSQL, Redis and Keycloak for local development, with
-pinned images, healthchecks, named volumes and no committed secrets, plus `deploy/.env.example`.
+Add `infra/local/docker-compose.yml` with PostgreSQL, Redis and Keycloak for local development, with
+pinned images, healthchecks, named volumes and no committed secrets, plus `infra/local/.env.example`.
 `make up` / `make down` (already in the ENG-4 Makefile) start and remove the stack. Acceptance:
 M1 exit criterion 3, except the realm (ENG-6).
 
@@ -20,7 +20,7 @@ Compose project `heimdall` (set by the Makefile). Every port is published on `12
 | `keycloak` | `quay.io/keycloak/keycloak:26.8.1` (`start-dev`) | `${KEYCLOAK_PORT:-8080}` | `/health/ready` on 9000 via bash `/dev/tcp` | `keycloak-data` |
 
 Variables, each with a dev-only default `${VAR:-default}` and documented in
-`deploy/.env.example`: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` (all `heimdall`),
+`infra/local/.env.example`: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` (all `heimdall`),
 `POSTGRES_PORT`, `REDIS_PASSWORD` (`heimdall`), `REDIS_PORT`, `KC_BOOTSTRAP_ADMIN_USERNAME`,
 `KC_BOOTSTRAP_ADMIN_PASSWORD` (`admin`/`admin`), `KEYCLOAK_PORT`.
 
@@ -51,10 +51,12 @@ removes containers and volumes (`docker volume ls`). Output goes in the PR.
 ## Tasks
 
 1. Docs: this plan and the M1 Decisions lines.
-2. `scripts/compose_test.sh` (failing first), then `deploy/docker-compose.yml` and
-   `deploy/.env.example`; `make check` green; manual `make up` / `make down`.
+2. `scripts/compose_test.sh` (failing first), then `infra/local/docker-compose.yml` and
+   `infra/local/.env.example`; `make check` green; manual `make up` / `make down`.
 3. `.claude/settings.json`: narrow the `Read(.env.*)` deny rules so `.env.example` is readable
    and writable (deny wins over allow, so an allow entry cannot do it).
+4. Rename `deploy/` to `infra/` with `local/` (the Compose stack), `stage/` and `prod/` (empty,
+   `.gitkeep`); point the Makefile, its test and `compose_test.sh` at `infra/local`.
 
 ## Approved decisions
 
@@ -66,3 +68,6 @@ removes containers and volumes (`docker volume ls`). Output goes in the PR.
 - The catch-all `Read(./**/.env.*)` deny blocked `.env.example`. It is replaced by explicit
   variants (`.env.local`, `.env.*.local`, `.env.development`, `.env.production`,
   `.env.staging`, `.env.test`) at the root and any depth; `.env` stays denied. Done in this PR.
+- 2026-10-24: `deploy/` becomes `infra/{local,stage,prod}`; the Compose stack lives in
+  `infra/local`. The lane keeps the name `deploy` (label `lane:deploy`). The Makefile is edited
+  for the path, an exception to the M1 "only 1.6 edits the Makefile" decision.

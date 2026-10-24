@@ -1,6 +1,6 @@
 # Local development stack: PostgreSQL, Redis and Keycloak. Start with `make up`, remove
 # everything (volumes included) with `make down`. Every default below is dev-only; override them
-# in deploy/.env (see deploy/.env.example). Ports bind to 127.0.0.1 only.
+# in infra/local/.env (see infra/local/.env.example). Ports bind to 127.0.0.1 only.
 # Tests: scripts/compose_test.sh
 
 services:

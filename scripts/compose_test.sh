@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Static checks on deploy/docker-compose.yml and deploy/.env.example: the service set, pinned
+# Static checks on infra/local/docker-compose.yml and infra/local/.env.example: the service set, pinned
 # images, healthchecks, named volumes, local-only ports and no committed secrets. Every check is
 # first run on a bad fixture (it must complain), then on the real files (it must not). Renders the
 # file with `docker compose config`, so it needs the docker CLI but not a running daemon.
@@ -7,7 +7,7 @@
 set -u
 
 here=$(cd "$(dirname "$0")" && pwd)
-deploy="$here/../deploy"
+stack="$here/../infra/local"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
@@ -144,10 +144,10 @@ done
 
 real="$tmp/real"
 mkdir -p "$real"
-if [ -f "$deploy/docker-compose.yml" ]; then cp "$deploy/docker-compose.yml" "$real/"; fi
-if [ -f "$deploy/.env.example" ]; then cp "$deploy/.env.example" "$real/"; fi
+if [ -f "$stack/docker-compose.yml" ]; then cp "$stack/docker-compose.yml" "$real/"; fi
+if [ -f "$stack/.env.example" ]; then cp "$stack/.env.example" "$real/"; fi
 if [ -f "$real/docker-compose.yml" ]; then pass=$((pass + 1)); else
-  fail=$((fail + 1)); echo "FAIL deploy/docker-compose.yml not found"
+  fail=$((fail + 1)); echo "FAIL infra/local/docker-compose.yml not found"
 fi
 for c in $checks; do
   [ "$c" = check_valid ] || check_valid "$real" >/dev/null
